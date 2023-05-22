@@ -5,20 +5,17 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
-
 const corsOptions = require("./config/cors-options");
 const connectDb = require("./config/db-conn");
 
 const { logger } = require("./middleware/log-events");
 const errorHandler = require("./middleware/error-handler");
 const verifyJwt = require("./middleware/verify-jwt");
-const credentials = require("./middleware/credentials");
 
 connectDb();
 const PORT = process.env.PORT || 3500;
 const app = express();
 
-app.use(credentials);
 app.use(cors(corsOptions));
 app.use(logger);
 app.use(express.urlencoded({ extended: false }));
@@ -47,6 +44,8 @@ app.all("*", (req, res) => {
   }
 });
 
+app.use(errorHandler);
+
 mongoose.connection.once("open", () => {
   console.log("connected to MongoDB");
   app.listen(PORT, () => {
@@ -57,5 +56,3 @@ mongoose.connection.once("open", () => {
 mongoose.connection.on("error", (err) => {
   console.log("err");
 });
-
-app.use(errorHandler);
